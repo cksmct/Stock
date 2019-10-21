@@ -10,7 +10,7 @@ import time
 import sys
 import threading
 
-from Queue import Queue
+import queue
 from optparse import OptionParser
 
 
@@ -30,10 +30,10 @@ class Worker(threading.Thread):
             if self.result_queue.full():
                 res = sorted([self.result_queue.get() for i in range(self.result_queue.qsize())], key=lambda s: s[0], reverse=True)
                 res.insert(0, ('0', u'名称     股价'))
-                print '***** start *****'
+                print('***** start *****')
                 for obj in res:
-                    print obj[1]
-                print '***** end *****\n'
+                    print(obj[1])
+                print('***** end *****\n')
             self.work_queue.task_done()
 
 
@@ -42,14 +42,14 @@ class Stock(object):
 
     def __init__(self, code, thread_num):
         self.code = code
-        self.work_queue = Queue()
+        self.work_queue = queue.Queue()
         self.threads = []
         self.__init_thread_poll(thread_num)
 
     def __init_thread_poll(self, thread_num):
         self.params = self.code.split(',')
         self.params.extend(['s_sh000001', 's_sz399001'])  # 默认获取沪指、深指
-        self.result_queue = Queue(maxsize=len(self.params[::-1]))
+        self.result_queue = queue.Queue(maxsize=len(self.params[::-1]))
         for i in range(thread_num):
             self.threads.append(Worker(self.work_queue, self.result_queue))
 
@@ -90,8 +90,9 @@ if __name__ == '__main__':
     options, args = parser.parse_args(args=sys.argv[1:])
 
     assert options.codes, "Please enter the stock code!"  # 是否输入股票代码
-    if filter(lambda s: s[:-6] not in ('sh', 'sz', 's_sh', 's_sz'), options.codes.split(',')):  # 股票代码输入是否正确
-        raise ValueError
+    print(options.codes)
+    #if filter(lambda s: s[:-6] not in ('sh', 'sz', 's_sh', 's_sz'), options.codes.split(',')):  # 股票代码输入是否正确
+    #    raise ValueError
 
     stock = Stock(options.codes, options.thread_num)
 
